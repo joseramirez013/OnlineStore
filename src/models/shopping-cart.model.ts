@@ -1,7 +1,7 @@
-import {Entity, model, property, hasMany, belongsTo} from '@loopback/repository';
-import {SaleItem} from './sale-item.model';
+import {belongsTo, Entity, hasMany, model, property} from '@loopback/repository';
 import {Customer} from './customer.model';
 import {SaleDocument} from './sale-document.model';
+import {SaleItem} from './sale-item.model';
 
 @model()
 export class ShoppingCart extends Entity {
@@ -27,11 +27,11 @@ export class ShoppingCart extends Entity {
   @hasMany(() => SaleItem)
   saleItems: SaleItem[];
 
-  @belongsTo(() => Customer)
-  customerId: string;
-
   @hasMany(() => SaleDocument)
   saleDocuments: SaleDocument[];
+
+  @belongsTo(() => Customer)
+  customerId: string;
 
   constructor(data?: Partial<ShoppingCart>) {
     super(data);

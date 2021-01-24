@@ -1,5 +1,4 @@
-import {Entity, model, property, belongsTo} from '@loopback/repository';
-import {ShoppingCart} from './shopping-cart.model';
+import {Entity, model, property} from '@loopback/repository';
 
 @model()
 export class SaleDocument extends Entity {
@@ -33,8 +32,10 @@ export class SaleDocument extends Entity {
   })
   total?: number;
 
-  @belongsTo(() => ShoppingCart)
-  shoppingCartId: string;
+  @property({
+    type: 'string',
+  })
+  shoppingCartId?: string;
 
   constructor(data?: Partial<SaleDocument>) {
     super(data);

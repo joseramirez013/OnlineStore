@@ -23,7 +23,7 @@ import {
 import {ServiceKeys as keys} from '../keys/service-keys';
 import {Customer} from '../models';
 import {CustomerRepository, UserRepository} from '../repositories';
-import {EncryptDecrypt} from '../services/encrypt-decryp-services';
+import {EncryptDecrypt} from '../services/encrypt-decryp-service';
 
 export class CustomerController {
   constructor(

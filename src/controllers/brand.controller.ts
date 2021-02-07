@@ -1,30 +1,39 @@
 import {
+  authenticate
+} from '@loopback/authentication';
+import {
   Count,
   CountSchema,
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
+  del, get,
+  getModelSchemaRef, param,
+
+
+  patch, post,
+
+
+
+
   put,
-  del,
-  requestBody,
+
+  requestBody
 } from '@loopback/rest';
 import {Brand} from '../models';
 import {BrandRepository} from '../repositories';
 
+
 export class BrandController {
   constructor(
     @repository(BrandRepository)
-    public brandRepository : BrandRepository,
-  ) {}
+    public brandRepository: BrandRepository,
+  ) { }
 
+  @authenticate('TokenAdminStrategy')
   @post('/brand', {
     responses: {
       '200': {
@@ -49,6 +58,7 @@ export class BrandController {
     return this.brandRepository.create(brand);
   }
 
+  @authenticate('TokenAdminStrategy')
   @get('/brand/count', {
     responses: {
       '200': {
@@ -63,6 +73,7 @@ export class BrandController {
     return this.brandRepository.count(where);
   }
 
+  //@authenticate('TokenStrategy')
   @get('/brand', {
     responses: {
       '200': {

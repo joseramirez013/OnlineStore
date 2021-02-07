@@ -1,9 +1,12 @@
 import {
+  authenticate
+} from '@loopback/authentication';
+import {
   Count,
   CountSchema,
   Filter,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
   del,
@@ -13,11 +16,11 @@ import {
   param,
   patch,
   post,
-  requestBody,
+  requestBody
 } from '@loopback/rest';
 import {
   Customer,
-  ShoppingCart,
+  ShoppingCart
 } from '../models';
 import {CustomerRepository} from '../repositories';
 
@@ -45,6 +48,7 @@ export class CustomerShoppingCartController {
     return this.customerRepository.shoppingCart(id).get(filter);
   }
 
+  @authenticate('TokenCustomerStrategy')
   @post('/customers/{id}/shopping-cart', {
     responses: {
       '200': {

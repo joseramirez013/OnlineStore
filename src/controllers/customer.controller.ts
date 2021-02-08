@@ -60,7 +60,7 @@ export class CustomerController {
     let u = {
       username: c.document,
       password: password2,
-      //rol: 1,
+      role: 1,
       customerId: c.id
     };
 

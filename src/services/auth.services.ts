@@ -31,12 +31,21 @@ export class AuthService {
       data: {
         _id: user.id,
         username: user.username,
-        //role: user.role,
+        role: user.role,
         paternId: user.customerId
       }
     },
       keys.JWT_SECRET_KEY);
     return token;
+  }
+
+  async VerifyToken(token: string) {
+    try {
+      let data = jwt.verify(token, keys.JWT_SECRET_KEY).data;
+      return (data);
+    } catch (error) {
+      return (false);
+    }
   }
 
 }

@@ -22,6 +22,12 @@ export class User extends Entity {
   })
   password: string;
 
+  @property({
+    type: 'number',
+    required: true,
+  })
+  role: number;
+
   @belongsTo(() => Customer)
   customerId?: string;
 

@@ -1,6 +1,7 @@
 import {inject, lifeCycleObserver, LifeCycleObserver} from '@loopback/core';
 import {juggler} from '@loopback/repository';
 
+/*
 const config = {
   name: 'mongo',
   connector: 'mongodb',
@@ -12,6 +13,20 @@ const config = {
   database: 'ProductSalesDB',
   useNewUrlParser: true
 };
+*/
+
+const config = {
+  name: 'mongo',
+  connector: 'mongodb',
+  url: 'mongodb://localhost/ProductSalesDB',
+  host: 'localhost',
+  port: 27017,
+  user: '',
+  password: '',
+  database: 'ProductSalesDB',
+  useNewUrlParser: true
+};
+
 
 // Observe application's life cycle to disconnect the datasource when
 // application is stopped. This allows the application to be shut down

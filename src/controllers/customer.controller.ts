@@ -20,10 +20,14 @@ import {
 
   requestBody
 } from '@loopback/rest';
+import {generate} from 'generate-password';
+import {PasswordKeys} from '../keys/password-keys';
 import {ServiceKeys as keys} from '../keys/service-keys';
 import {Customer} from '../models';
+import {EmailNotification} from '../models/email-notification.model';
 import {CustomerRepository, UserRepository} from '../repositories';
 import {EncryptDecrypt} from '../services/encrypt-decryp-service';
+import {NotificationService} from '../services/notification.services';
 
 export class CustomerController {
   constructor(
@@ -55,7 +59,13 @@ export class CustomerController {
     customer: Omit<Customer, 'id'>,
   ): Promise<Customer> {
     let c = await this.customerRepository.create(customer);
-    let password1 = new EncryptDecrypt(keys.MD5).Encrypt(c.document);
+    let randomPassword = generate({
+      length: PasswordKeys.LENGTH,
+      numbers: PasswordKeys.NUMBERS,
+      lowercase: PasswordKeys.LOWERCASE,
+      uppercase: PasswordKeys.UPPERCASE
+    });
+    let password1 = new EncryptDecrypt(keys.MD5).Encrypt(randomPassword);
     let password2 = new EncryptDecrypt(keys.MD5).Encrypt(password1);
     let u = {
       username: c.document,
@@ -65,6 +75,13 @@ export class CustomerController {
     };
 
     let user = await this.userRepository.create(u);
+    let notification = new EmailNotification({
+      textBody: `Hola ${c.name} ${c.lastname}, se ha creado una cuenta a su nombre, su usario es su documento de identidad y su contraseña es: ${randomPassword}`,
+      htmlBody: `Hola ${c.name} ${c.lastname}, <br /> se ha creado una cuenta a su nombre, su usario es su documento de identidad y su contraseña es: <strong>${randomPassword}</strong>`,
+      to: c.email,
+      subject: 'Nueva cuenta'
+    });
+    await new NotificationService().MailNotification(notification);
     user.password = '';
     c.user = user;
     return c;

@@ -56,7 +56,7 @@ typings/
 
 # dotenv environment variables file
 .env
-enviroments_keys
+enviroments_keys.dev
 
 # Transpiled JavaScript files from Typescript
 /dist

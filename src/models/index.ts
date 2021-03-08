@@ -7,3 +7,4 @@ export * from './customer.model';
 export * from './user.model';
 export * from './shopping-cart.model';
 export * from './sale-document.model';
+export * from './sms-notification.model';

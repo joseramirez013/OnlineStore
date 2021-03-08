@@ -2,8 +2,10 @@
 
 import {repository} from '@loopback/repository';
 import {HttpErrors, post, requestBody} from '@loopback/rest';
-import {UserRepository} from '../repositories';
+import {SmsNotification} from '../models/sms-notification.model';
+import {CustomerRepository, UserRepository} from '../repositories';
 import {AuthService} from '../services/auth.services';
+import {NotificationService} from '../services/notification.service';
 
 // import {inject} from '@loopback/core';
 
@@ -23,7 +25,9 @@ export class UserController {
 
   constructor(
     @repository(UserRepository)
-    public userRepository: UserRepository
+    public userRepository: UserRepository,
+    @repository(CustomerRepository)
+    public customerRepository: CustomerRepository
   ) {
     this.authService = new AuthService(this.userRepository);
   }
@@ -69,8 +73,20 @@ export class UserController {
       switch (passwordResetData.type) {
         case 1:
           // Send SMS
-          console.log("Sending SMS: " + randomPassword);
-          return true;
+          let customer = await this.customerRepository.findOne({where: {document: passwordResetData.username}})
+          if (customer) {
+            let notification = new SmsNotification({
+              body: `Su nueva contraseña es: ${randomPassword}`,
+              to: customer?.telephone
+            });
+            let sms = await new NotificationService().SmsNotification(notification)
+            if (sms) {
+              console.log("Sending SMS");
+              return true;
+            }
+            throw new HttpErrors[400]("Error sending sms message.");
+            break;
+          }
           break;
         case 2:
           // Send mail

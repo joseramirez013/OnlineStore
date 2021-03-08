@@ -7,3 +7,4 @@ export * from './sale-item.repository';
 export * from './shopping-cart.repository';
 export * from './customer.repository';
 export * from './user.repository';
+export * from './advertising.repository';

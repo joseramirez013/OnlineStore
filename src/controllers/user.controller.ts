@@ -7,7 +7,6 @@ import {SmsNotification} from '../models/sms-notification.model';
 import {CustomerRepository, UserRepository} from '../repositories';
 import {AuthService} from '../services/auth.services';
 import {NotificationService} from '../services/notification.services';
->>>>>>> resetPassword
 
 // import {inject} from '@loopback/core';
 
@@ -83,12 +82,11 @@ export class UserController {
             });
             let sms = await new NotificationService().SmsNotification(notification);
             if (sms) {
-              console.log("SMS message sent");
               return true;
             }
             throw new HttpErrors[400]("Phone is not found");
           }
-          throw new HttpErrors[400]("User not found");
+          throw new HttpErrors[401]("User not found");
           break;
         case 2:
           // Send mail
@@ -101,7 +99,6 @@ export class UserController {
             });
             let mail = await new NotificationService().MailNotification(notification);
             if (mail) {
-              console.log("Mail message sent");
               return true;
             }
             throw new HttpErrors[400]("Email is not found");
@@ -114,7 +111,7 @@ export class UserController {
           break;
       }
     }
-    throw new HttpErrors[400]("User not found");
+    throw new HttpErrors[401]("User not found");
   }
 
 }

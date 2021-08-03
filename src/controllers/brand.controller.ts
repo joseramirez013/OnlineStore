@@ -1,20 +1,25 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
+  del, get,
+  getModelSchemaRef, HttpErrors, param,
+
+
+  patch, post,
+
+
+
+
   put,
-  del,
-  requestBody,
+
+  requestBody
 } from '@loopback/rest';
 import {Brand} from '../models';
 import {BrandRepository} from '../repositories';
@@ -22,9 +27,10 @@ import {BrandRepository} from '../repositories';
 export class BrandController {
   constructor(
     @repository(BrandRepository)
-    public brandRepository : BrandRepository,
-  ) {}
+    public brandRepository: BrandRepository,
+  ) { }
 
+  @authenticate('TokenAdminStrategy')
   @post('/brand', {
     responses: {
       '200': {
@@ -46,7 +52,12 @@ export class BrandController {
     })
     brand: Omit<Brand, 'id'>,
   ): Promise<Brand> {
-    return this.brandRepository.create(brand);
+    let currentBrand = await this.brandRepository.findOne({where: {name: brand.name}});
+    if (currentBrand) {
+      throw new HttpErrors[401]("A brand with this name already exists!");
+    } else {
+      return this.brandRepository.create(brand);
+    }
   }
 
   @get('/brand/count', {
@@ -84,6 +95,7 @@ export class BrandController {
     return this.brandRepository.find(filter);
   }
 
+  @authenticate('TokenAdminStrategy')
   @patch('/brand', {
     responses: {
       '200': {
@@ -125,6 +137,7 @@ export class BrandController {
     return this.brandRepository.findById(id, filter);
   }
 
+  @authenticate('TokenAdminStrategy')
   @patch('/brand/{id}', {
     responses: {
       '204': {
@@ -146,6 +159,7 @@ export class BrandController {
     await this.brandRepository.updateById(id, brand);
   }
 
+  @authenticate('TokenAdminStrategy')
   @put('/brand/{id}', {
     responses: {
       '204': {

@@ -1,4 +1,4 @@
-import {Entity, model, property, belongsTo} from '@loopback/repository';
+import {belongsTo, Entity, model, property} from '@loopback/repository';
 import {Product} from './product.model';
 import {ShoppingCart} from './shopping-cart.model';
 
@@ -16,13 +16,12 @@ export class SaleItem extends Entity {
     required: true,
   })
   price: number;
-  /**
-    @property({
-      type: 'date',
-      required: true,
-    })
-    date: string;
-  */
+
+  @property({
+    type: 'string',
+    required: true,
+  })
+  name: string;
 
   @property({
     type: 'number',
@@ -34,7 +33,7 @@ export class SaleItem extends Entity {
     type: 'date',
     required: true,
   })
-  addedDate: string;
+  addedDate: Date;
 
   @belongsTo(() => Product)
   productId: string;

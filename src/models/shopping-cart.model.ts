@@ -16,7 +16,7 @@ export class ShoppingCart extends Entity {
     type: 'date',
     required: true,
   })
-  createdDate: string;
+  createdDate: Date;
 
   @property({
     type: 'string',

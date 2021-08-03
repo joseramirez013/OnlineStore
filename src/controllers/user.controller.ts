@@ -4,7 +4,7 @@ import {repository} from '@loopback/repository';
 import {HttpErrors, post, requestBody} from '@loopback/rest';
 import {EmailNotification} from '../models/email-notification.model';
 import {SmsNotification} from '../models/sms-notification.model';
-import {CustomerRepository, UserRepository} from '../repositories';
+import {CustomerRepository, ShoppingCartRepository, UserRepository} from '../repositories';
 import {AuthService} from '../services/auth.services';
 import {NotificationService} from '../services/notification.services';
 
@@ -15,6 +15,14 @@ class Credentials {
   password: string;
 }
 
+
+class ChangePasswordData {
+  id: string;
+  currentPassword: string;
+  newPassword: string;
+}
+
+// type of request: 1. SMS, 2. Email
 class PasswordResetData {
   username: string;
   type: number;
@@ -28,9 +36,11 @@ export class UserController {
     @repository(UserRepository)
     public userRepository: UserRepository,
     @repository(CustomerRepository)
-    public customerRepository: CustomerRepository
+    public customerRepository: CustomerRepository,
+    @repository(ShoppingCartRepository)
+    public shoppingCartRepository: ShoppingCartRepository
   ) {
-    this.authService = new AuthService(this.userRepository);
+    this.authService = new AuthService(this.userRepository, shoppingCartRepository);
   }
 
   @post('/login', {
@@ -41,13 +51,12 @@ export class UserController {
     }
   })
   async login(
-    @requestBody() credentials: Credentials
-  ): Promise<object> {
-    let user = await this.authService.Identify(credentials.username, credentials.password);
-    if (user) {
-      let tk = await this.authService.GenerateToken(user);
+    @requestBody() credentials: Credentials): Promise<object> {
+    let data = await this.authService.Identify(credentials.username, credentials.password);
+    if (data) {
+      let tk = await this.authService.GenerateToken(data);
       return {
-        data: user,
+        data: data,
         token: tk
       }
     } else {
@@ -63,8 +72,7 @@ export class UserController {
     }
   })
   async reset(
-    @requestBody() passwordResetData: PasswordResetData
-  ): Promise<boolean> {
+    @requestBody() passwordResetData: PasswordResetData): Promise<boolean> {
     let randomPassword = await this.authService.ResetPassword(passwordResetData.username);
     if (randomPassword) {
       // send SMS or mail with new password
@@ -112,6 +120,24 @@ export class UserController {
       }
     }
     throw new HttpErrors[401]("User not found");
+  }
+
+
+  @post('/change-password', {
+    responses: {
+      '200': {
+        description: 'Login for users'
+      }
+    }
+  })
+  async changePassword(
+    @requestBody() data: ChangePasswordData): Promise<boolean> {
+    let user = await this.authService.VerifyUserToChangePassword(data.id, data.currentPassword);
+    if (user) {
+      return await this.authService.ChangePassword(user, data.newPassword);
+    } else {
+      throw new HttpErrors[401]("User or password invalid.");
+    }
   }
 
 }

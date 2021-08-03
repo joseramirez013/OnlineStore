@@ -7,7 +7,7 @@ import {repository} from '@loopback/repository';
 import {Strategy} from 'passport';
 import {BasicStrategy} from 'passport-http';
 import {Strategy as BearerStrategy} from 'passport-http-bearer';
-import {UserRepository} from '../repositories';
+import {ShoppingCartRepository, UserRepository} from '../repositories';
 import {AuthService} from '../services/auth.services';
 
 
@@ -18,9 +18,11 @@ export class MyAuthStrategyProvider implements Provider<Strategy | undefined> {
     @inject(AuthenticationBindings.METADATA)
     private metadata: AuthenticationMetadata,
     @repository(UserRepository)
-    public userRepository: UserRepository
+    public userRepository: UserRepository,
+    @repository(ShoppingCartRepository)
+    public shoppingCartRepository: ShoppingCartRepository
   ) {
-    this.authService = new AuthService(userRepository);
+    this.authService = new AuthService(userRepository, shoppingCartRepository);
   }
 
   value(): ValueOrPromise<Strategy | undefined> {
@@ -56,10 +58,14 @@ export class MyAuthStrategyProvider implements Provider<Strategy | undefined> {
     token: string,
     cb: (err: Error | null, user?: Object | false) => void,
   ) {
-    this.authService.VerifyToken(token).then(data => {
-      if (data && data.role == 2) {
-        return cb(null, data);
+    //console.log(token);
+    this.authService.VerifyToken(token).then(info => {
+      //console.log(info);
+      if (info && info.data.role == 2) {
+        //console.log("I'm administrator");
+        return cb(null, info);
       }
+      //console.log("not");
       return cb(null, false);
     });
   }
@@ -68,9 +74,9 @@ export class MyAuthStrategyProvider implements Provider<Strategy | undefined> {
     token: string,
     cb: (err: Error | null, user?: Object | false) => void,
   ) {
-    this.authService.VerifyToken(token).then(data => {
-      if (data && data.role == 1) {
-        return cb(null, data);
+    this.authService.VerifyToken(token).then(info => {
+      if (info && info.data.role == 1) {
+        return cb(null, info);
       }
       return cb(null, false);
     });

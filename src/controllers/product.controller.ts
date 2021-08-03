@@ -1,30 +1,47 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
+  del, get,
+  getModelSchemaRef, HttpErrors, param,
+
+
+  patch, post,
+
+
+
+
   put,
-  del,
-  requestBody,
+
+  requestBody
 } from '@loopback/rest';
-import {Product} from '../models';
-import {ProductRepository} from '../repositories';
+import {Product, SaleItem} from '../models';
+import {ProductRepository, SaleItemRepository} from '../repositories';
+
+class SaleItemData {
+  name: string;
+  productId: string;
+  cartId: string;
+  addedDate: Date;
+  amount: number;
+  price: number;
+}
 
 export class ProductController {
   constructor(
     @repository(ProductRepository)
-    public productRepository : ProductRepository,
-  ) {}
+    public productRepository: ProductRepository,
+    @repository(SaleItemRepository)
+    public saleItemRepository: SaleItemRepository
+  ) { }
 
+  @authenticate('TokenAdminStrategy')
   @post('/product', {
     responses: {
       '200': {
@@ -84,6 +101,7 @@ export class ProductController {
     return this.productRepository.find(filter);
   }
 
+  @authenticate('TokenAdminStrategy')
   @patch('/product', {
     responses: {
       '200': {
@@ -125,6 +143,7 @@ export class ProductController {
     return this.productRepository.findById(id, filter);
   }
 
+  @authenticate('TokenAdminStrategy')
   @patch('/product/{id}', {
     responses: {
       '204': {
@@ -146,6 +165,7 @@ export class ProductController {
     await this.productRepository.updateById(id, product);
   }
 
+  @authenticate('TokenAdminStrategy')
   @put('/product/{id}', {
     responses: {
       '204': {
@@ -160,6 +180,7 @@ export class ProductController {
     await this.productRepository.replaceById(id, product);
   }
 
+  @authenticate('TokenAdminStrategy')
   @del('/product/{id}', {
     responses: {
       '204': {
@@ -169,5 +190,33 @@ export class ProductController {
   })
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.productRepository.deleteById(id);
+  }
+
+  @authenticate('TokenCustomerStrategy')
+  @post('/product-sale-item', {
+    responses: {
+      '200': {
+        description: 'Sale item document'
+      }
+    }
+  })
+  async saleItem(
+    @requestBody() saleItemData: SaleItemData
+  ): Promise<Boolean> {
+    let product = this.productRepository.findById(saleItemData.productId); //Obtiene el producto por el identificador que esta llegando
+    //console.log(saleItemData);
+    if (product) {
+      let saleItem = new SaleItem({
+        productId: saleItemData.productId,
+        shoppingCartId: saleItemData.cartId,
+        addedDate: new Date(),
+        amount: saleItemData.amount,
+        price: saleItemData.price,
+        name: saleItemData.name
+      });
+      this.saleItemRepository.create(saleItem);
+      return true;
+    }
+    throw new HttpErrors[403]("This product does not exists!");
   }
 }

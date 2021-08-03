@@ -1,20 +1,25 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
+  del, get,
+  getModelSchemaRef, param,
+
+
+  patch, post,
+
+
+
+
   put,
-  del,
-  requestBody,
+
+  requestBody
 } from '@loopback/rest';
 import {Category} from '../models';
 import {CategoryRepository} from '../repositories';
@@ -22,9 +27,10 @@ import {CategoryRepository} from '../repositories';
 export class CategoryController {
   constructor(
     @repository(CategoryRepository)
-    public categoryRepository : CategoryRepository,
-  ) {}
+    public categoryRepository: CategoryRepository,
+  ) { }
 
+  @authenticate('TokenAdminStrategy')
   @post('/category', {
     responses: {
       '200': {
@@ -83,7 +89,7 @@ export class CategoryController {
   ): Promise<Category[]> {
     return this.categoryRepository.find(filter);
   }
-
+  @authenticate('TokenAdminStrategy')
   @patch('/category', {
     responses: {
       '200': {
@@ -124,7 +130,7 @@ export class CategoryController {
   ): Promise<Category> {
     return this.categoryRepository.findById(id, filter);
   }
-
+  @authenticate('TokenAdminStrategy')
   @patch('/category/{id}', {
     responses: {
       '204': {
@@ -145,7 +151,7 @@ export class CategoryController {
   ): Promise<void> {
     await this.categoryRepository.updateById(id, category);
   }
-
+  @authenticate('TokenAdminStrategy')
   @put('/category/{id}', {
     responses: {
       '204': {
@@ -159,7 +165,7 @@ export class CategoryController {
   ): Promise<void> {
     await this.categoryRepository.replaceById(id, category);
   }
-
+  @authenticate('TokenAdminStrategy')
   @del('/category/{id}', {
     responses: {
       '204': {

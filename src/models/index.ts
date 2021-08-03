@@ -11,3 +11,4 @@ export * from './shopping-cart.model';
 export * from './sms-notification.model';
 export * from './user.model';
 
+export * from './authenticated-user.model';

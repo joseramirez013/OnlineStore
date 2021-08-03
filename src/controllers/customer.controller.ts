@@ -8,7 +8,7 @@ import {
 } from '@loopback/repository';
 import {
   del, get,
-  getModelSchemaRef, param,
+  getModelSchemaRef, HttpErrors, param,
 
 
   patch, post,
@@ -23,19 +23,26 @@ import {
 import {generate} from 'generate-password';
 import {PasswordKeys} from '../keys/password-keys';
 import {ServiceKeys as keys} from '../keys/service-keys';
-import {Customer} from '../models';
+import {Customer, ShoppingCart} from '../models';
 import {EmailNotification} from '../models/email-notification.model';
-import {CustomerRepository, UserRepository} from '../repositories';
+import {CustomerRepository, ShoppingCartRepository, UserRepository} from '../repositories';
+import {AuthService} from '../services/auth.services';
 import {EncryptDecrypt} from '../services/encrypt-decryp-service';
 import {NotificationService} from '../services/notification.services';
 
 export class CustomerController {
+  authService: AuthService;
+
   constructor(
     @repository(CustomerRepository)
     public customerRepository: CustomerRepository,
     @repository(UserRepository)
     public userRepository: UserRepository,
-  ) { }
+    @repository(ShoppingCartRepository)
+    public shoppingCartRepository: ShoppingCartRepository
+  ) {
+    this.authService = new AuthService(this.userRepository, shoppingCartRepository);
+  }
 
   @post('/customer', {
     responses: {
@@ -58,6 +65,10 @@ export class CustomerController {
     })
     customer: Omit<Customer, 'id'>,
   ): Promise<Customer> {
+    let userExits = await this.customerRepository.findOne({where: {document: customer.document}})
+    if (userExits) {
+      throw new HttpErrors[403];
+    }
     let c = await this.customerRepository.create(customer);
     let randomPassword = generate({
       length: PasswordKeys.LENGTH,
@@ -73,8 +84,19 @@ export class CustomerController {
       role: 1,
       customerId: c.id
     };
-
     let user = await this.userRepository.create(u);
+
+    /**
+     * Customer Shopping cart creation
+     */
+    let shoppingCart = new ShoppingCart({
+      code: `${this.authService.GenerateRandomPassword()}-${Date.now()}`, //Codigo
+      createdDate: new Date(), //Fecha actual
+      customerId: c.id //Customer Id
+    });
+    await this.shoppingCartRepository.create(shoppingCart); //Crear carrito de compras del cliente
+
+
     let notification = new EmailNotification({
       textBody: `Hola ${c.name} ${c.lastname}, se ha creado una cuenta a su nombre, su usario es su documento de identidad y su contraseña es: ${randomPassword}`,
       htmlBody: `Hola ${c.name} ${c.lastname}, <br /> se ha creado una cuenta a su nombre, su usario es su documento de identidad y su contraseña es: <strong>${randomPassword}</strong>`,
